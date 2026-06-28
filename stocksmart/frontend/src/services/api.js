@@ -6,4 +6,5 @@ export const otimizar          = ()          => api.get("/otimizar");
 export const cadastrarProduto  = (payload)   => api.post("/produtos", payload);
 export const editarProduto     = (id, data)  => api.put(`/produtos/${id}`, data);
 export const removerProduto    = (id)        => api.delete(`/produtos/${id}`);
-export const atualizarOrcamento = (valor)    => api.put("/orcamento", { valor });
+export const atualizarOrcamento  = (valor)   => api.put("/orcamento",  { valor });
+export const atualizarCapacidade = (valor)   => api.put("/capacidade", { valor });

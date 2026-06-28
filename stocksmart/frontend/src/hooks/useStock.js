@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { getProdutos, otimizar, cadastrarProduto, editarProduto, removerProduto, atualizarOrcamento } from "../services/api";
+import { getProdutos, otimizar, cadastrarProduto, editarProduto, removerProduto, atualizarOrcamento, atualizarCapacidade } from "../services/api";
 
 export function useStock() {
   const [produtos,    setProdutos]    = useState([]);
   const [categorias,  setCategorias]  = useState([]);
   const [orcamento,   setOrcamento]   = useState(0);
+  const [capacidade,  setCapacidade]  = useState(0);
   const [resultado,   setResultado]   = useState(null);
   const [loading,     setLoading]     = useState(false);
   const [loadingOpt,  setLoadingOpt]  = useState(false);
@@ -16,7 +17,6 @@ export function useStock() {
     setTimeout(() => setMsg(null), 3000);
   };
 
-  // Carrega produtos e orçamento
   const carregar = useCallback(async () => {
     setLoading(true);
     try {
@@ -24,11 +24,11 @@ export function useStock() {
       setProdutos(data.produtos);
       setCategorias(data.categorias);
       setOrcamento(data.orcamento);
+      setCapacidade(data.capacidade);
     } catch { setErro("Erro ao carregar. Verifique se o backend está rodando."); }
     finally { setLoading(false); }
   }, []);
 
-  // Roda otimização
   const rodarOtimizacao = useCallback(async () => {
     setLoadingOpt(true);
     try {
@@ -40,15 +40,21 @@ export function useStock() {
 
   useEffect(() => { carregar(); }, [carregar]);
 
-  // Sempre que produtos ou orçamento mudam, re-otimiza
+  // Re-otimiza sempre que produtos, orçamento ou capacidade mudam
   useEffect(() => {
-    if (produtos.length > 0 && orcamento > 0) rodarOtimizacao();
-  }, [produtos, orcamento, rodarOtimizacao]);
+    if (produtos.length > 0 && orcamento > 0 && capacidade > 0) rodarOtimizacao();
+  }, [produtos, orcamento, capacidade, rodarOtimizacao]);
 
   const salvarOrcamento = async (valor) => {
     await atualizarOrcamento(valor);
     setOrcamento(valor);
     flash(`Orçamento atualizado para R$ ${valor}`);
+  };
+
+  const salvarCapacidade = async (valor) => {
+    await atualizarCapacidade(valor);
+    setCapacidade(valor);
+    flash(`Capacidade atualizada para ${valor} kg`);
   };
 
   const cadastrar = async (payload) => {
@@ -69,5 +75,5 @@ export function useStock() {
     flash(`${nome} removido do estoque.`, "warn");
   };
 
-  return { produtos, categorias, orcamento, resultado, loading, loadingOpt, erro, msg, salvarOrcamento, cadastrar, editar, remover };
+  return { produtos, categorias, orcamento, capacidade, resultado, loading, loadingOpt, erro, msg, salvarOrcamento, salvarCapacidade, cadastrar, editar, remover };
 }

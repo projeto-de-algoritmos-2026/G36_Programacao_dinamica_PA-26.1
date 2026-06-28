@@ -6,11 +6,12 @@ import TabelaProdutos from "../components/TabelaProdutos";
 import ResultadoAlgoritmos from "../components/ResultadoAlgoritmos";
 
 export default function Dashboard() {
-  const { produtos, categorias, orcamento, resultado, loading, loadingOpt, erro, msg,
-          salvarOrcamento, cadastrar, editar, remover } = useStock();
+  const { produtos, categorias, orcamento, capacidade, resultado, loading, loadingOpt, erro, msg,
+          salvarOrcamento, salvarCapacidade, cadastrar, editar, remover } = useStock();
   const [aba, setAba] = useState("resultado");
 
   const selecionados = resultado?.iterativo?.selecionados || [];
+  const pesoTotal    = resultado?.iterativo?.pesoTotal    ?? "—";
 
   return (
     <div className="dashboard">
@@ -19,11 +20,11 @@ export default function Dashboard() {
           <span className="brand-icon">🏪</span>
           <div>
             <h1>StockSmart</h1>
-            <p>Planejador de estoque sazonal · Knapsack + Selos (PD)</p>
+            <p>Planejador de estoque sazonal · Knapsack 2D + Selos (PD)</p>
           </div>
         </div>
         <div style={{ fontSize: 12, color: "var(--muted)", textAlign: "right" }}>
-          <div>Knapsack iterativo: O(n×W)</div>
+          <div>Knapsack 2D iterativo: O(n×W×C)</div>
           <div>Recursivo + memoização</div>
           <div>Coin Change: O(n×W)</div>
         </div>
@@ -32,18 +33,22 @@ export default function Dashboard() {
       {erro && <div className="alert a-err">{erro}</div>}
       {msg  && <div className={`alert a-${msg.tipo}`}>{msg.texto}</div>}
 
-      {/* Orçamento fixo */}
-      <PainelOrcamento orcamento={orcamento} onSalvar={salvarOrcamento} />
+      <PainelOrcamento
+        orcamento={orcamento}
+        capacidade={capacidade}
+        onSalvar={salvarOrcamento}
+        onSalvarCapacidade={salvarCapacidade}
+      />
 
-      {/* Stats */}
       <div className="stats-row">
         <div className="stat-card"><div className="stat-label">Produtos</div><div className="stat-val">{produtos.length}</div></div>
         <div className="stat-card"><div className="stat-label">Orçamento</div><div className="stat-val info">R$ {orcamento}</div></div>
+        <div className="stat-card"><div className="stat-label">Cap. peso</div><div className="stat-val info">{capacidade} kg</div></div>
         <div className="stat-card"><div className="stat-label">Selecionados</div><div className="stat-val ok">{selecionados.length}</div></div>
         <div className="stat-card"><div className="stat-label">Valor máximo</div><div className="stat-val warn">R$ {resultado?.iterativo?.valorMaximo ?? "—"}</div></div>
+        <div className="stat-card"><div className="stat-label">Peso usado</div><div className="stat-val">{pesoTotal !== "—" ? `${pesoTotal} kg` : "—"}</div></div>
       </div>
 
-      {/* Abas */}
       <div className="nav-tabs">
         {[["resultado","📊 Resultado"],["produtos","📦 Produtos"],["cadastrar","➕ Cadastrar"]].map(([k, label]) => (
           <button key={k} className={`nav-tab${aba === k ? " active" : ""}`} onClick={() => setAba(k)}>{label}</button>
@@ -56,7 +61,7 @@ export default function Dashboard() {
           ? <p className="muted-msg">Carregando...</p>
           : resultado
             ? <ResultadoAlgoritmos resultado={resultado} />
-            : <div className="card"><p className="muted-msg">Cadastre produtos e defina o orçamento para ver a otimização.</p></div>
+            : <div className="card"><p className="muted-msg">Cadastre produtos e defina as restrições para ver a otimização.</p></div>
       )}
 
       {aba === "produtos" && (

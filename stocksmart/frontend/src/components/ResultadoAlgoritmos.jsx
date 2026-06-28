@@ -5,7 +5,7 @@ export default function ResultadoAlgoritmos({ resultado }) {
   const [mostrarTabela, setMostrarTabela] = useState(false);
   if (!resultado) return null;
 
-  const { iterativo, recursivo, troco, orcamento } = resultado;
+  const { iterativo, recursivo, troco, orcamento, capacidade } = resultado;
   const dados = aba === "iterativo" ? iterativo : recursivo;
 
   const melhorTempo = parseFloat(iterativo.tempoMs) <= parseFloat(recursivo.tempoMs)
@@ -18,9 +18,9 @@ export default function ResultadoAlgoritmos({ resultado }) {
       <div className="algo-compare">
         <div className={`algo-card-cmp ${aba === "iterativo" ? "active" : ""}`} onClick={() => setAba("iterativo")}>
           <div className="algo-tipo">Knapsack Iterativo</div>
-          <div className="algo-sub">Tabela DP bottom-up · O(n×W)</div>
+          <div className="algo-sub">Tabela DP bottom-up · O(n×W×C)</div>
           <div className="algo-val">R$ {iterativo.valorMaximo} valor máximo</div>
-          <div className="algo-meta">Gasto: R$ {iterativo.gastoTotal} / R$ {orcamento}</div>
+          <div className="algo-meta">Gasto: R$ {iterativo.gastoTotal} / R$ {orcamento} · Peso: {iterativo.pesoTotal} / {capacidade} kg</div>
           <div className="algo-tempo" style={{ marginTop: 8, fontSize: 12, fontFamily: "'DM Mono',monospace" }}>
             ⏱ {iterativo.tempoMs} ms
             {melhorTempo === "iterativo" && <span className="badge b-ok" style={{ marginLeft: 8 }}>mais rápido</span>}
@@ -29,7 +29,7 @@ export default function ResultadoAlgoritmos({ resultado }) {
         <div className="algo-vs">VS</div>
         <div className={`algo-card-cmp ${aba === "recursivo" ? "active" : ""}`} onClick={() => setAba("recursivo")}>
           <div className="algo-tipo">Knapsack Recursivo</div>
-          <div className="algo-sub">Memoização top-down · O(n×W)</div>
+          <div className="algo-sub">Memoização top-down · O(n×W×C)</div>
           <div className="algo-val">R$ {recursivo.valorMaximo} valor máximo</div>
           <div className="algo-meta-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px 12px", fontSize: 12, color: "var(--muted)", marginTop: 4 }}>
             <span>Chamadas totais: <strong>{recursivo.chamadas}</strong></span>
@@ -64,8 +64,10 @@ export default function ResultadoAlgoritmos({ resultado }) {
         </div>
         <div className="sel-total">
           <span>Gasto total: <strong>R$ {dados.gastoTotal}</strong></span>
-          <span>Valor total obtido: <strong style={{color:"var(--ok)"}}>R$ {dados.valorMaximo}</strong></span>
+          <span>Peso total: <strong>{dados.pesoTotal} kg</strong></span>
+          <span>Valor total: <strong style={{color:"var(--ok)"}}>R$ {dados.valorMaximo}</strong></span>
           <span>Orçamento restante: <strong>R$ {orcamento - dados.gastoTotal}</strong></span>
+          <span>Peso restante: <strong>{capacidade - dados.pesoTotal} kg</strong></span>
         </div>
       </div>
 
@@ -78,7 +80,7 @@ export default function ResultadoAlgoritmos({ resultado }) {
           </button>
         </div>
         <div className="hint-algo">
-          dp[i][W] = melhor valor usando os primeiros i produtos com orçamento total W
+          dp[i][W][C] = melhor valor com i produtos, orçamento W={orcamento} e capacidade C={capacidade} kg
         </div>
         {mostrarTabela && (
           <div className="table-wrap">
@@ -87,7 +89,7 @@ export default function ResultadoAlgoritmos({ resultado }) {
                 <tr>
                   <th>i</th>
                   <th>Produto adicionado</th>
-                  <th>dp[i][{orcamento}]</th>
+                  <th>dp[i][{orcamento}][{capacidade}]</th>
                   <th>Ganho</th>
                 </tr>
               </thead>

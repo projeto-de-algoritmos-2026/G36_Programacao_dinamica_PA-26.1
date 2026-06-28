@@ -73,6 +73,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .orcamento-edit input:focus{border-color:#93c5fd}
 .orcamento-hint{font-size:11px;color:var(--hint,#a09e99);font-family:'DM Mono',monospace;margin-left:auto}
 
+/* Stats com 6 colunas */
+@media(min-width:701px){.stats-row{grid-template-columns:repeat(6,1fr)}}
+
+/* Painel de restrições */
+.restricao-item{display:flex;flex-direction:column;gap:4px}
+.restricao-divider{width:1px;background:var(--border);align-self:stretch;margin:0 4px}
+.restricao-hint{margin-left:0 !important}
+
 /* Botões pequenos */
 .btn-sm{border-radius:6px;padding:4px 10px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;border:1px solid transparent;white-space:nowrap}
 .btn-ok{background:var(--ok-bg);color:var(--ok);border-color:#86efac}
