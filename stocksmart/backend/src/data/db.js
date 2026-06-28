@@ -21,6 +21,9 @@ let produtos = [
 // Orçamento fixo da loja — pode ser alterado via API
 let orcamentoFixo = 150;
 
+// Capacidade máxima de peso (kg) — segunda restrição do knapsack 2D
+let capacidadePeso = 15;
+
 const denominacoes = [1, 2, 5, 10, 20, 50, 100];
 
 const CATEGORIAS = ["Alimentos", "Bebidas", "Higiene", "Limpeza"];
@@ -28,6 +31,8 @@ const CATEGORIAS = ["Alimentos", "Bebidas", "Higiene", "Limpeza"];
 function getProdutos()          { return produtos; }
 function getOrcamento()         { return orcamentoFixo; }
 function setOrcamento(v)        { orcamentoFixo = v; }
+function getCapacidade()        { return capacidadePeso; }
+function setCapacidade(v)       { capacidadePeso = v; }
 
 function addProduto(p) {
   const novo = { ...p, id: proximoId++ };
@@ -49,4 +54,4 @@ function updateProduto(id, campos) {
   return p;
 }
 
-module.exports = { getProdutos, getOrcamento, setOrcamento, addProduto, removeProduto, updateProduto, denominacoes, CATEGORIAS };
+module.exports = { getProdutos, getOrcamento, setOrcamento, getCapacidade, setCapacidade, addProduto, removeProduto, updateProduto, denominacoes, CATEGORIAS };

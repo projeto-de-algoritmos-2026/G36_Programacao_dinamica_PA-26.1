@@ -1,27 +1,33 @@
 const db = require("../data/db");
 const { knapsackIterativo, knapsackRecursivo, coinChange } = require("./algoritmosController");
 
-// Roda otimização com o orçamento fixo atual
+// Roda otimização com orçamento e capacidade de peso atuais
 function _rodar(res) {
-  const produtos  = db.getProdutos();
-  const orcamento = db.getOrcamento();
+  const produtos   = db.getProdutos();
+  const orcamento  = db.getOrcamento();
+  const capacidade = db.getCapacidade();
 
   if (!produtos.length)
-    return res.json({ orcamento, iterativo: null, recursivo: null, troco: null });
+    return res.json({ orcamento, capacidade, iterativo: null, recursivo: null, troco: null });
 
-  const iterativo = knapsackIterativo(produtos, orcamento);
-  const recursivo = knapsackRecursivo(produtos, orcamento);
+  const iterativo = knapsackIterativo(produtos, orcamento, capacidade);
+  const recursivo = knapsackRecursivo(produtos, orcamento, capacidade);
   const troco     = coinChange(db.denominacoes, iterativo.gastoTotal);
 
-  res.json({ orcamento, iterativo, recursivo, troco, denominacoesDisponiveis: db.denominacoes });
+  res.json({ orcamento, capacidade, iterativo, recursivo, troco, denominacoesDisponiveis: db.denominacoes });
 }
 
-// GET /api/produtos — lista produtos + orçamento atual
+// GET /api/produtos — lista produtos + restrições atuais
 function listarProdutos(req, res) {
-  res.json({ produtos: db.getProdutos(), orcamento: db.getOrcamento(), categorias: db.CATEGORIAS });
+  res.json({
+    produtos:   db.getProdutos(),
+    orcamento:  db.getOrcamento(),
+    capacidade: db.getCapacidade(),
+    categorias: db.CATEGORIAS,
+  });
 }
 
-// GET /api/otimizar — roda com orçamento fixo
+// GET /api/otimizar — roda com restrições atuais
 function otimizar(req, res) { _rodar(res); }
 
 // POST /api/produtos — cadastra produto
@@ -36,7 +42,7 @@ function cadastrarProduto(req, res) {
   res.status(201).json({ mensagem: "Produto cadastrado.", produto: novo });
 }
 
-// PUT /api/produtos/:id — edita preço/valor/peso de um produto
+// PUT /api/produtos/:id — edita produto
 function editarProduto(req, res) {
   const id     = Number(req.params.id);
   const campos = {};
@@ -56,7 +62,7 @@ function removerProduto(req, res) {
   res.json({ mensagem: "Produto removido." });
 }
 
-// PUT /api/orcamento — atualiza orçamento fixo
+// PUT /api/orcamento — atualiza orçamento
 function atualizarOrcamento(req, res) {
   const valor = Number(req.body.valor);
   if (!valor || valor <= 0)  return res.status(400).json({ erro: "Informe um orçamento válido." });
@@ -65,4 +71,13 @@ function atualizarOrcamento(req, res) {
   res.json({ mensagem: "Orçamento atualizado.", orcamento: valor });
 }
 
-module.exports = { listarProdutos, otimizar, cadastrarProduto, editarProduto, removerProduto, atualizarOrcamento };
+// PUT /api/capacidade — atualiza capacidade de peso
+function atualizarCapacidade(req, res) {
+  const valor = Number(req.body.valor);
+  if (!valor || valor <= 0)  return res.status(400).json({ erro: "Informe uma capacidade válida." });
+  if (valor > 50)            return res.status(400).json({ erro: "Capacidade máxima 50 kg para demo." });
+  db.setCapacidade(valor);
+  res.json({ mensagem: "Capacidade atualizada.", capacidade: valor });
+}
+
+module.exports = { listarProdutos, otimizar, cadastrarProduto, editarProduto, removerProduto, atualizarOrcamento, atualizarCapacidade };
