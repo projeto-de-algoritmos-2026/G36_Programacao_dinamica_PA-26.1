@@ -1,9 +1,12 @@
+const { performance } = require("perf_hooks");
+
 // ─────────────────────────────────────────
 // KNAPSACK ITERATIVO — Programação Dinâmica
 // Complexidade: O(n * W)
 // Constrói a tabela dp[n+1][W+1] de baixo pra cima
 // ─────────────────────────────────────────
 function knapsackIterativo(produtos, orcamento) {
+  const inicio = performance.now();
   const n  = produtos.length;
   const W  = orcamento;
 
@@ -32,14 +35,18 @@ function knapsackIterativo(produtos, orcamento) {
     }
   }
 
-  // Retorna só a linha final da tabela (para não sobrecarregar a resposta)
-  const tabelaResumida = dp.map(row => row[W]);
+  // Última coluna da tabela: dp[i][W] = melhor valor com os i primeiros produtos
+  const tabelaDP = dp.map((row, i) => ({
+    produto: i === 0 ? "—" : produtos[i - 1].nome,
+    valorMaximo: row[W],
+  }));
 
   return {
     valorMaximo:  dp[n][W],
     gastoTotal:   selecionados.reduce((a, p) => a + p.preco, 0),
     selecionados,
-    tabelaDP:     tabelaResumida,
+    tabelaDP,
+    tempoMs:      (performance.now() - inicio).toFixed(4),
   };
 }
 
@@ -48,27 +55,23 @@ function knapsackIterativo(produtos, orcamento) {
 // Complexidade: O(n * W) com cache
 // ─────────────────────────────────────────
 function knapsackRecursivo(produtos, orcamento) {
-  const n     = produtos.length;
-  const memo  = new Map();
-  let chamadas = 0;
+  const inicio  = performance.now();
+  const n       = produtos.length;
+  const memo    = new Map();
+  let chamadas  = 0;
+  let cacheHits = 0;
 
   function solve(i, w) {
-    if (i === 0 || w === 0) return 0;
-    const key = `${i},${w}`;
-    if (memo.has(key)) return memo.get(key);
-
     chamadas++;
-    const { preco, valor } = produtos[i - 1];
-    let resultado;
+    if (i === 0 || w === 0) return 0;
 
-    if (preco > w) {
-      resultado = solve(i - 1, w);
-    } else {
-      resultado = Math.max(
-        solve(i - 1, w),
-        solve(i - 1, w - preco) + valor
-      );
-    }
+    const key = `${i},${w}`;
+    if (memo.has(key)) { cacheHits++; return memo.get(key); }
+
+    const { preco, valor } = produtos[i - 1];
+    const resultado = preco > w
+      ? solve(i - 1, w)
+      : Math.max(solve(i - 1, w), solve(i - 1, w - preco) + valor);
 
     memo.set(key, resultado);
     return resultado;
@@ -76,7 +79,7 @@ function knapsackRecursivo(produtos, orcamento) {
 
   const valorMaximo = solve(n, orcamento);
 
-  // Rastreia selecionados
+  // Rastreia selecionados (usa memo já preenchido — O(n))
   const selecionados = [];
   let w = orcamento;
   for (let i = n; i > 0; i--) {
@@ -92,7 +95,10 @@ function knapsackRecursivo(produtos, orcamento) {
     gastoTotal:  selecionados.reduce((a, p) => a + p.preco, 0),
     selecionados,
     chamadas,
+    cacheHits,
+    cacheMisses: chamadas - cacheHits,
     cacheSize:   memo.size,
+    tempoMs:     (performance.now() - inicio).toFixed(4),
   };
 }
 
